@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#10233f" />
+<title>전동상지 재활 라이딩</title>
+<style>
+  :root {
+    --bg:#07111f;
+    --panel:rgba(12,26,46,.84);
+    --panel-2:rgba(255,255,255,.08);
+    --line:rgba(255,255,255,.14);
+    --text:#f6f9ff;
+    --muted:#a9b8cd;
+    --cyan:#63e6ff;
+    --green:#70f0a6;
+    --yellow:#ffd76b;
+    --orange:#ffab66;
+    --danger:#ff6b7d;
+    --shadow:0 24px 80px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;color:var(--text)}
+  button,input{font:inherit}
+  button{border:0;color:inherit}
+  .hidden{display:none!important}
+
+  /* landing */
+  #landing{position:fixed;inset:0;display:grid;place-items:center;padding:24px;background:
+    radial-gradient(circle at 15% 20%,rgba(74,152,255,.26),transparent 33%),
+    radial-gradient(circle at 82% 14%,rgba(112,240,166,.18),transparent 30%),
+    linear-gradient(145deg,#081427,#102c4b 55%,#10233f)}
+  .landing-card{width:min(980px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:34px;border:1px solid var(--line);border-radius:30px;background:rgba(8,20,36,.78);backdrop-filter:blur(18px);box-shadow:var(--shadow)}
+  .brand{display:flex;align-items:center;gap:15px;margin-bottom:10px}
+  .logo{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#63e6ff,#6f8cff);box-shadow:0 14px 35px rgba(99,230,255,.22);font-size:28px}
+  h1{margin:0;font-size:clamp(30px,4.3vw,54px);letter-spacing:-1.8px}
+  .lead{margin:10px 0 28px;color:var(--muted);font-size:17px;line-height:1.6}
+  .setup-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+  .box{border:1px solid var(--line);background:var(--panel-2);border-radius:22px;padding:20px}
+  .box h3{margin:0 0 15px;font-size:17px}
+  .time-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .choice{min-height:72px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid var(--line);cursor:pointer;font-size:19px;font-weight:800;transition:.2s}
+  .choice:hover{transform:translateY(-2px);background:rgba(255,255,255,.1)}
+  .choice.active{background:linear-gradient(135deg,rgba(99,230,255,.25),rgba(111,140,255,.25));border-color:var(--cyan);box-shadow:0 0 0 1px rgba(99,230,255,.25) inset}
+  .settings{display:grid;gap:15px}
+  .setting-row{display:grid;grid-template-columns:1fr auto;gap:15px;align-items:center}
+  .setting-row label{font-weight:700}
+  .setting-row small{display:block;color:var(--muted);font-weight:500;margin-top:3px}
+  input[type=range]{width:170px;accent-color:#63e6ff}
+  .start-row{display:flex;gap:12px;margin-top:18px;align-items:center}
+  .primary{flex:1;min-height:66px;border-radius:18px;background:linear-gradient(135deg,#51d995,#39b5e8);font-weight:900;font-size:20px;cursor:pointer;box-shadow:0 14px 34px rgba(57,181,232,.2)}
+  .primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .secondary{min-height:66px;padding:0 20px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-weight:800;cursor:pointer}
+  .env-note{margin-top:16px;padding:13px 15px;border-radius:14px;background:rgba(255,215,107,.08);border:1px solid rgba(255,215,107,.18);color:#ffe9a9;font-size:13px;line-height:1.55}
+
+  /* game */
+  #app{position:fixed;inset:0;background:#0b1b2d;overflow:hidden}
+  #gameCanvas{position:absolute;inset:0;width:100%;height:100%}
+  .topbar{position:absolute;left:18px;right:18px;top:max(16px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;z-index:10;pointer-events:none}
+  .hud-left{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{min-width:104px;padding:10px 13px;border-radius:15px;background:rgba(5,14,25,.72);border:1px solid var(--line);backdrop-filter:blur(12px);box-shadow:0 10px 28px rgba(0,0,0,.15)}
+  .chip .label{color:var(--muted);font-size:11px;font-weight:800;letter-spacing:.5px}
+  .chip .value{font-size:22px;font-weight:900;margin-top:2px}
+  .timer{font-variant-numeric:tabular-nums;font-size:32px;font-weight:950;padding:11px 16px;border-radius:17px;background:rgba(5,14,25,.76);border:1px solid var(--line);backdrop-filter:blur(12px)}
+
+  .coach{position:absolute;left:18px;top:92px;z-index:11;pointer-events:none;text-align:left}
+  .coach-bubble{display:inline-flex;align-items:center;gap:9px;max-width:min(560px,58vw);padding:11px 16px;border-radius:18px;background:rgba(5,14,25,.72);border:1px solid var(--line);backdrop-filter:blur(12px);font-size:14px;font-weight:800}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+
+  .bottom-panel{position:absolute;z-index:12;left:18px;right:18px;bottom:max(16px,env(safe-area-inset-bottom));display:grid;grid-template-columns:minmax(250px,420px) 1fr auto;gap:12px;align-items:end}
+  .speed-card,.progress-card,.control-card{background:rgba(5,14,25,.78);border:1px solid var(--line);border-radius:19px;backdrop-filter:blur(14px);padding:14px;box-shadow:0 12px 34px rgba(0,0,0,.2)}
+  .speed-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .speed-name{font-size:20px;font-weight:950}
+  .mode-badge{font-size:11px;padding:6px 8px;border-radius:999px;background:rgba(99,230,255,.13);border:1px solid rgba(99,230,255,.22);color:#b8f4ff;font-weight:800}
+  .meter{height:12px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:11px}
+  .meter-fill{height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#6de3ff,#6ef0a6,#ffd76b);transition:width .12s linear}
+  .speed-meta{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:12px;font-weight:700}
+  .progress-card{padding:14px 16px}
+  .progress-title{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:9px}
+  .progress-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#6f8cff,#63e6ff);border-radius:inherit}
+  .control-card{display:flex;gap:8px;justify-content:flex-end;padding:10px}
+  .mini{height:44px;min-width:44px;padding:0 12px;white-space:nowrap;border-radius:13px;background:rgba(255,255,255,.09);border:1px solid var(--line);cursor:pointer;font-weight:900}
+  .mini.danger{background:rgba(255,107,125,.12);color:#ffc2cb}
+
+  /* camera */
+  .camera-card{position:absolute;right:18px;top:96px;width:min(280px,29vw);aspect-ratio:4/3;border-radius:20px;overflow:hidden;background:#02060b;border:1px solid var(--line);z-index:9;box-shadow:0 18px 50px rgba(0,0,0,.32);transition:.25s}
+  .camera-card.collapsed{opacity:0;transform:translateY(-10px) scale(.95);pointer-events:none}
+  #cameraVideo,#poseCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  #poseCanvas{pointer-events:none}
+  .camera-label{position:absolute;left:9px;bottom:8px;background:rgba(0,0,0,.56);border-radius:999px;padding:5px 8px;font-size:10px;font-weight:850;z-index:3}
+
+  /* overlays */
+  .overlay{position:fixed;inset:0;z-index:50;background:rgba(2,7,13,.72);display:grid;place-items:center;padding:22px;backdrop-filter:blur(9px)}
+  .modal{width:min(660px,100%);max-height:calc(100vh - 44px);overflow:auto;border-radius:28px;background:#0d1f36;border:1px solid var(--line);box-shadow:var(--shadow);padding:28px;text-align:center}
+  .modal h2{font-size:27px;margin:0 0 10px}
+  .modal p{margin:0;color:var(--muted);line-height:1.65}
+  .stage{margin:22px 0 10px;font-size:15px;font-weight:900;color:#dce9fb}
+  .count{font-size:64px;font-weight:950;line-height:1;margin:18px 0;color:var(--cyan)}
+  .status-line{display:flex;justify-content:center;gap:7px;align-items:center;font-size:12px;color:var(--muted);margin-top:12px}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .modal-actions{display:flex;gap:10px;margin-top:22px}
+  .modal-actions button{flex:1;min-height:52px;border-radius:15px;font-weight:900;cursor:pointer;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+  .modal-actions .ok{background:linear-gradient(135deg,#51d995,#39b5e8)}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}
+  .summary-grid.no-cars{grid-template-columns:repeat(4,1fr)}
+  .summary-item{padding:15px 8px;border-radius:17px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+  .summary-item b{display:block;font-size:25px;margin-bottom:4px}
+  .summary-item span{font-size:11px;color:var(--muted);font-weight:750}
+
+  @media (max-width:850px){
+    .setup-grid{grid-template-columns:1fr}
+    .bottom-panel{grid-template-columns:1fr auto}.progress-card{display:none}.control-card{min-width:0}
+    .camera-card{width:210px;top:88px}
+    .coach{top:86px}.coach-bubble{max-width:70vw}
+  }
+  @media (max-width:620px){
+    .landing-card{padding:22px;border-radius:23px}.time-row{grid-template-columns:repeat(2,1fr)}
+    .topbar{left:10px;right:10px}.chip{min-width:84px;padding:8px 10px}.chip .value{font-size:18px}.timer{font-size:25px;padding:9px 12px}
+    .coach{display:none}.camera-card{width:150px;right:10px;top:78px}
+    .bottom-panel{left:10px;right:10px;bottom:10px;grid-template-columns:1fr auto}.speed-card{min-width:0}.control-card{padding:8px}
+    .speed-meta span:nth-child(2){display:none}.summary-grid,.summary-grid.no-cars{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<section id="landing">
+  <div class="landing-card">
+    <div class="brand">
+      <div class="logo">↻</div>
+      <div><h1>전동상지 재활 라이딩</h1><div class="lead">전동상지 페달을 돌리면 캐릭터가 앞으로 이동합니다. 몸을 좌우로 조금 기울여 차선을 바꾸고, 차량을 피하며 별과 코인을 모아보세요.</div></div>
+    </div>
+
+    <div class="setup-grid">
+      <div class="box">
+        <h3>치료 시간</h3>
+        <div class="time-row" id="timeRow">
+          <button class="choice" data-min="10">10분</button>
+          <button class="choice" data-min="15">15분</button>
+          <button class="choice active" data-min="20">20분</button>
+          <button class="choice" data-min="25">25분</button>
+        </div>
+      </div>
+      <div class="box settings">
+        <div class="setting-row">
+          <div><label for="sensitivity">인식 감도</label><small>페달·몸 움직임이 작으면 높여주세요</small></div>
+          <input id="sensitivity" type="range" min="60" max="150" value="100" />
+        </div>
+        <div class="setting-row">
+          <div><label for="cameraPreview">카메라 미리보기</label><small>치료사가 자세를 확인할 때 사용</small></div>
+          <input id="cameraPreview" type="checkbox" checked style="width:22px;height:22px;accent-color:#63e6ff" />
+        </div>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="secondary" id="cameraTestBtn">카메라 확인</button>
+      <button class="primary" id="startBtn">치료 시작</button>
+    </div>
+    <div class="env-note" id="envNote">카메라 사용은 Chrome/Edge의 HTTPS 주소 또는 localhost 환경에서 가장 안정적입니다. HTML 파일을 태블릿에서 직접 열면 브라우저가 카메라를 차단할 수 있습니다.</div>
+  </div>
+</section>
+
+<main id="app" class="hidden">
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="topbar">
+    <div class="hud-left">
+      <div class="chip"><div class="label">게임 거리</div><div class="value"><span id="distanceValue">0</span> m</div></div>
+      <div class="chip"><div class="label">점수</div><div class="value"><span id="scoreValue">0</span> pt</div></div>
+      <div class="chip"><div class="label">획득 별</div><div class="value">★ <span id="starValue">0</span></div></div>
+      <div class="chip"><div class="label">추정 RPM</div><div class="value" id="rpmValue">--</div></div>
+    </div>
+    <div class="timer" id="timer">20:00</div>
+  </div>
+
+  <div class="coach"><div class="coach-bubble"><span class="dot" id="coachDot"></span><span id="coachText">편안한 속도로 전동상지 페달을 돌려보세요.</span></div></div>
+
+  <div class="camera-card" id="cameraCard">
+    <video id="cameraVideo" autoplay muted playsinline></video>
+    <canvas id="poseCanvas"></canvas>
+    <div class="camera-label" id="cameraLabel">카메라 준비 중</div>
+  </div>
+
+  <div class="bottom-panel">
+    <div class="speed-card">
+      <div class="speed-head"><div class="speed-name" id="speedName">정지</div><div class="mode-badge" id="modeBadge">인식 준비</div></div>
+      <div class="meter"><div class="meter-fill" id="speedFill"></div></div>
+      <div class="speed-meta"><span>움직임 <b id="motionValue">0</b>%</span><span>편안 속도 = 100%</span><span id="trackingState">양손 찾는 중</span></div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-title"><span>치료 진행</span><span id="progressText">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="control-card">
+      <button class="mini" id="toggleCameraBtn" title="카메라 미리보기">CAM</button>
+      <button class="mini" id="recalibrateBtn" title="다시 캘리브레이션">재설정</button>
+      <button class="mini" id="pauseBtn">일시정지</button>
+      <button class="mini danger" id="endBtn">종료</button>
+    </div>
+  </div>
+</main>
+
+<div class="overlay hidden" id="setupOverlay">
+  <div class="modal">
+    <h2 id="setupTitle">카메라 준비</h2>
+    <p id="setupText">환자의 양쪽 어깨, 팔꿈치, 손이 화면 안에 들어오도록 태블릿 각도를 맞춰주세요.</p>
+    <div class="stage" id="setupStage">카메라 연결 중</div>
+    <div class="count" id="setupCount">•••</div>
+    <div class="status-line"><span class="spinner" id="setupSpinner"></span><span id="setupDetail">카메라 권한을 확인하고 있습니다.</span></div>
+    <div class="modal-actions hidden" id="setupActions">
+      <button id="setupCancel">돌아가기</button>
+      <button class="ok" id="setupRetry">다시 시도</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="pauseOverlay">
+  <div class="modal">
+    <h2>일시정지</h2><p>현재 기록은 유지됩니다.</p>
+    <div class="modal-actions"><button class="ok" id="resumeBtn">계속하기</button><button id="pauseEndBtn">치료 종료</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="summaryOverlay">
+  <div class="modal">
+    <h2>치료 완료</h2>
+    <p>오늘 세션의 게임 기록입니다. 아래 수치는 운동 수행을 돕기 위한 게임 지표이며 의료 평가값은 아닙니다.</p>
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-item"><b id="sumTime">0:00</b><span>수행 시간</span></div>
+      <div class="summary-item"><b id="sumDistance">0 m</b><span>게임 거리</span></div>
+      <div class="summary-item"><b id="sumScore">0</b><span>게임 점수</span></div>
+      <div class="summary-item"><b id="sumStars">0</b><span>획득 별</span></div>
+      <div class="summary-item car-stat"><b id="sumAvoided">0</b><span>피한 차량</span></div>
+      <div class="summary-item car-stat"><b id="sumHits">0</b><span>충돌</span></div>
+    </div>
+    <div class="modal-actions"><button id="restartBtn">처음 화면</button><button class="ok" id="againBtn">같은 설정으로 다시</button></div>
+  </div>
+</div>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+const lerp = (a,b,t) => a+(b-a)*t;
+const dist2 = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
+
+const state = {
+  selectedMinutes: 20,
+  sensitivity: 1,
+  stream: null,
+  poseLandmarker: null,
+  detectorMode: 'loading',
+  gameRunning: false,
+  paused: false,
+  raf: 0,
+  startTs: 0,
+  lastFrameTs: 0,
+  remainingSec: 1200,
+  elapsedSec: 0,
+  distance: 0,
+  stars: 0,
+  score: 0,
+  pickups: [],
+  nextPickupAt: 16,
+  pickupsCollected: 0,
+  motionNorm: 0,
+  motionSmooth: 0,
+  rawSpeed: 0,
+  restLevel: 0.02,
+  comfortLevel: 0.35,
+  motionSamples: [],
+  avgMotionAccum: 0,
+  avgMotionFrames: 0,
+  lastPoseRun: 0,
+  prevWrists: null,
+  prevPoseTime: 0,
+  lastWristDeltaSign: 0,
+  crossings: [],
+  rpm: null,
+  prevPedalAngle: null,
+  prevPedalTime: 0,
+  pedalPhase: 0,
+  pedalRadius: 0,
+  poseVisible: false,
+  calibratingPhase: null,
+  calibrationSamples: [],
+  fallbackPrev: null,
+  fallbackCanvas: document.createElement('canvas'),
+  fallbackCtx: null,
+  cameraReady: false,
+  launchIntent: 'start',
+  visualSpeed: 0,
+  runnerPhase: 0,
+  worldOffset: 0,
+  flashStar: 0,
+  flashText: null,
+  flashTextLife: 0
+};
+state.fallbackCanvas.width = 160;
+state.fallbackCanvas.height = 120;
+state.fallbackCtx = state.fallbackCanvas.getContext('2d',{willReadFrequently:true});
+Object.assign(state,{
+  torsoCenterX:.5,
+  neutralTorsoX:.5,
+  headCenterX:.5,
+  neutralHeadX:.5,
+  shoulderTilt:0,
+  neutralShoulderTilt:0,
+  leanNorm:0,
+  leanSmooth:0,
+  laneTarget:0,
+  laneVisual:0,
+  obstacles:[],
+  nextObstacleAt:55,
+  lastWaveOpenLane:0,
+  avoided:0,
+  hits:0,
+  collisionCooldown:0,
+  hitFlash:0,
+  rpmBuf:[],
+  wakeLock:null
+});
+
+const video = $('#cameraVideo');
+const poseCanvas = $('#poseCanvas');
+const poseCtx = poseCanvas.getContext('2d');
+const gameCanvas = $('#gameCanvas');
+const g = gameCanvas.getContext('2d');
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  gameCanvas.width = Math.round(innerWidth*dpr);
+  gameCanvas.height = Math.round(innerHeight*dpr);
+  gameCanvas.style.width = innerWidth+'px';
+  gameCanvas.style.height = innerHeight+'px';
+  g.setTransform(dpr,0,0,dpr,0,0);
+  poseCanvas.width = Math.max(video.clientWidth,320);
+  poseCanvas.height = Math.max(video.clientHeight,240);
+}
+addEventListener('resize',resize);
+resize();
+
+function fmtTime(sec){
+  sec=Math.max(0,Math.ceil(sec));
+  const m=Math.floor(sec/60), s=sec%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function percentile(arr,p){
+  if(!arr.length) return 0;
+  const a=[...arr].sort((x,y)=>x-y);
+  const idx=(a.length-1)*p;
+  const lo=Math.floor(idx), hi=Math.ceil(idx);
+  return lo===hi?a[lo]:lerp(a[lo],a[hi],idx-lo);
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+// 조향이 가능한 모드인지 확인합니다. 동작 감지 모드에서는 몸 기울임을 읽을 수 없습니다.
+function canSteer(){return state.detectorMode!=='motion';}
+
+// 정면 카메라에서 페달은 원이 아니라 손목의 위아래 왕복으로 보입니다.
+// 최근 12초 손목 높이 신호에서 왕복 주기를 재서 RPM을 구합니다.
+// 양손 교대(d)와 양손 동시(s) 중 진폭이 큰 신호를 씁니다.
+function estimateRpm(buf,now){
+  if(buf.length<20) return null;
+  const pick=key=>{
+    const values=buf.map(p=>p[key]);
+    const lo=percentile(values,.05), hi=percentile(values,.95);
+    return {values,lo,hi,range:hi-lo};
+  };
+  const d=pick('d'), s=pick('s');
+  const sig=d.range>=s.range?d:s;
+  if(sig.range<.06) return null;
+  const mid=(sig.lo+sig.hi)/2, band=sig.range*.25;
+  let armed=false;
+  const rises=[];
+  sig.values.forEach((v,i)=>{
+    if(v<mid-band) armed=true;
+    else if(armed && v>mid+band){armed=false;rises.push(buf[i].t);}
+  });
+  if(rises.length<2) return null;
+  const last=rises[rises.length-1];
+  const period=(last-rises[0])/(rises.length-1);
+  if(now-last>Math.max(3000,period*2)) return null;
+  const rpm=60000/period;
+  return rpm>=5 && rpm<=130 ? rpm : null;
+}
+
+// ---------- 화면 꺼짐 방지 ----------
+async function acquireWakeLock(){
+  if(!('wakeLock' in navigator) || state.wakeLock || document.hidden) return;
+  try{
+    const lock=await navigator.wakeLock.request('screen');
+    state.wakeLock=lock;
+    lock.addEventListener('release',()=>{if(state.wakeLock===lock)state.wakeLock=null;});
+  }catch(err){console.warn('Wake lock failed.',err);}
+}
+function releaseWakeLock(){
+  const lock=state.wakeLock;
+  state.wakeLock=null;
+  if(lock) lock.release().catch(()=>{});
+}
+
+// ---------- camera + pose ----------
+async function ensureCamera(){
+  if(state.stream && video.readyState>=2) return;
+  if(!navigator.mediaDevices?.getUserMedia){
+    throw new Error('이 브라우저에서는 카메라 API를 사용할 수 없습니다. HTTPS 주소 또는 localhost에서 열어주세요.');
+  }
+  state.stream = await navigator.mediaDevices.getUserMedia({
+    video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:30,max:30}},audio:false
+  });
+  video.srcObject = state.stream;
+  await video.play();
+  if(video.readyState<2) await new Promise(resolve=>video.onloadeddata=resolve);
+  state.cameraReady=true;
+  resize();
+}
+
+async function loadPose(){
+  if(state.poseLandmarker) return true;
+  try{
+    const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/+esm');
+    const filesetResolver = await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');
+    const poseOptions = delegate => ({
+      baseOptions:{
+        modelAssetPath:'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task',
+        ...(delegate ? {delegate} : {})
+      },
+      runningMode:'VIDEO',
+      numPoses:1,
+      minPoseDetectionConfidence:.45,
+      minPosePresenceConfidence:.45,
+      minTrackingConfidence:.45
+    });
+    try{
+      state.poseLandmarker = await vision.PoseLandmarker.createFromOptions(filesetResolver,poseOptions('GPU'));
+    }catch(gpuErr){
+      console.warn('GPU pose initialization failed; retrying on CPU.',gpuErr);
+      state.poseLandmarker = await vision.PoseLandmarker.createFromOptions(filesetResolver,poseOptions(null));
+    }
+    state.detectorMode='pose';
+    return true;
+  }catch(err){
+    console.warn('Pose model load failed; using motion fallback.',err);
+    state.detectorMode='motion';
+    return false;
+  }
+}
+
+function drawPose(landmarks){
+  const w=poseCanvas.width,h=poseCanvas.height;
+  poseCtx.clearRect(0,0,w,h);
+  if(!landmarks) return;
+  const ids=[0,7,8,11,12,13,14,15,16];
+  const pts={};
+  for(const id of ids){
+    const p=landmarks[id];
+    if(!p || (p.visibility??1)<.35) continue;
+    pts[id]={x:p.x*w,y:p.y*h};
+  }
+  poseCtx.save();
+  poseCtx.lineWidth=4; poseCtx.lineCap='round'; poseCtx.strokeStyle='rgba(99,230,255,.9)';
+  [[7,0],[0,8],[11,13],[13,15],[12,14],[14,16],[11,12]].forEach(([a,b])=>{
+    if(!pts[a]||!pts[b]) return;
+    poseCtx.beginPath();poseCtx.moveTo(pts[a].x,pts[a].y);poseCtx.lineTo(pts[b].x,pts[b].y);poseCtx.stroke();
+  });
+  for(const id of ids){if(!pts[id])continue;poseCtx.fillStyle=id>=15?'#70f0a6':id<=8?'#ffd76b':'#ffffff';poseCtx.beginPath();poseCtx.arc(pts[id].x,pts[id].y,id>=15?7:id<=8?5.5:5,0,Math.PI*2);poseCtx.fill();}
+  poseCtx.restore();
+}
+
+function processPose(now){
+  if(!state.poseLandmarker || video.readyState<2) return null;
+  if(now-state.lastPoseRun<55) return state.rawSpeed;
+  state.lastPoseRun=now;
+  let result;
+  try{ result=state.poseLandmarker.detectForVideo(video,now); }
+  catch(e){ console.warn(e); return null; }
+  const lm=result?.landmarks?.[0];
+  if(!lm){
+    state.poseVisible=false; state.leanNorm=0; drawPose(null); state.prevWrists=null; state.prevPedalAngle=null; state.prevPedalTime=0; state.rpm=null; return 0;
+  }
+  const required=[0,11,12,15,16];
+  if(required.some(i=>!lm[i] || (lm[i].visibility??1)<.35)){
+    state.poseVisible=false; state.leanNorm=0; drawPose(lm); state.prevWrists=null; state.prevPedalAngle=null; state.prevPedalTime=0; state.rpm=null; return 0;
+  }
+  state.poseVisible=true;
+  drawPose(lm);
+  const l={x:lm[15].x,y:lm[15].y}, r={x:lm[16].x,y:lm[16].y};
+  const shoulderWidth=Math.max(.12,dist2(lm[11],lm[12]));
+  const torsoCenterX=(lm[11].x+lm[12].x)/2;
+  state.torsoCenterX=torsoCenterX;
+
+  // 좌우 조향은 손목을 전혀 사용하지 않습니다.
+  // 1) 머리(코 + 양쪽 귀)의 좌우 위치, 2) 양 어깨의 높이 차이만으로 몸 기울임을 계산합니다.
+  const headPts=[lm[0],lm[7],lm[8]].filter(p=>p && (p.visibility??1)>=.35);
+  const headCenterX=headPts.length?headPts.reduce((s,p)=>s+p.x,0)/headPts.length:lm[0].x;
+  const shoulderTilt=(lm[11].y-lm[12].y)/shoulderWidth;
+  state.headCenterX=headCenterX;
+  state.shoulderTilt=shoulderTilt;
+
+  // v4에서 맞았던 좌우 방향을 유지합니다: 사용자가 왼쪽으로 기울면 음수, 오른쪽이면 양수.
+  const headShift=(state.neutralHeadX-headCenterX)/shoulderWidth;
+  const tiltShift=shoulderTilt-state.neutralShoulderTilt;
+  // 머리 이동을 주 신호로, 어깨 기울기를 보조 신호로 사용합니다.
+  state.leanNorm=clamp(headShift*.78-tiltShift*.42,-1.4,1.4);
+
+  // 전동상지 페달 특화 인식:
+  // 양 손목을 잇는 선을 하나의 크랭크 축으로 보고, 그 축이 회전하는 각속도를 계산합니다.
+  const crankDx=l.x-r.x, crankDy=l.y-r.y;
+  const crankSpan=Math.hypot(crankDx,crankDy);
+  const radiusNorm=(crankSpan/2)/shoulderWidth;
+  const angle=Math.atan2(crankDy,crankDx);
+  let speed=0;
+
+  if(state.prevPedalAngle!=null && state.prevPedalTime){
+    const dt=Math.max(.02,(now-state.prevPedalTime)/1000);
+    const dAngle=Math.atan2(Math.sin(angle-state.prevPedalAngle),Math.cos(angle-state.prevPedalAngle));
+    const omega=Math.abs(dAngle)/dt;
+    if(radiusNorm>.18 && radiusNorm<1.9){
+      speed=omega*clamp(radiusNorm,.25,1.1);
+      state.pedalRadius=radiusNorm;
+    }
+  }
+
+  state.rpmBuf.push({t:now,d:(l.y-r.y)/shoulderWidth,s:(l.y+r.y)/shoulderWidth});
+  while(state.rpmBuf.length && state.rpmBuf[0].t<now-12000) state.rpmBuf.shift();
+  state.rpm=estimateRpm(state.rpmBuf,now);
+
+  state.prevPedalAngle=angle;
+  state.prevPedalTime=now;
+  state.prevWrists={l,r}; state.prevPoseTime=now;
+  return speed;
+}
+
+function processFallback(){
+  if(video.readyState<2) return 0;
+  const c=state.fallbackCanvas, ctx=state.fallbackCtx;
+  ctx.save(); ctx.translate(c.width,0); ctx.scale(-1,1); ctx.drawImage(video,0,0,c.width,c.height); ctx.restore();
+  const data=ctx.getImageData(0,0,c.width,c.height).data;
+  if(!state.fallbackPrev){state.fallbackPrev=new Uint8ClampedArray(data);return 0;}
+  let changed=0,total=0,sum=0;
+  // central upper-body ROI; skip borders and lower 18%
+  for(let y=12;y<98;y+=2){
+    for(let x=12;x<148;x+=2){
+      const i=(y*c.width+x)*4;
+      const lum=(data[i]*.299+data[i+1]*.587+data[i+2]*.114);
+      const pl=(state.fallbackPrev[i]*.299+state.fallbackPrev[i+1]*.587+state.fallbackPrev[i+2]*.114);
+      const d=Math.abs(lum-pl); total++; if(d>13){changed++; sum+=d;}
+    }
+  }
+  state.fallbackPrev.set(data);
+  const ratio=changed/Math.max(1,total);
+  const strength=sum/Math.max(1,changed)/40;
+  return ratio*8*(.6+strength);
+}
+
+function detectorStep(now){
+  let raw;
+  if(state.detectorMode==='pose') raw=processPose(now);
+  else raw=processFallback();
+  if(raw==null) return;
+  state.rawSpeed=state.rawSpeed*.65+raw*.35;
+
+  if(state.calibratingPhase){
+    state.calibrationSamples.push(state.rawSpeed);
+    if(state.poseVisible && state.calibratingPhase==='rest'){
+      state.neutralTorsoX = lerp(state.neutralTorsoX,state.torsoCenterX,.18);
+      state.neutralHeadX = lerp(state.neutralHeadX,state.headCenterX,.20);
+      state.neutralShoulderTilt = lerp(state.neutralShoulderTilt,state.shoulderTilt,.20);
+    }
+    state.motionNorm=0;
+    state.leanSmooth=lerp(state.leanSmooth,0,.25);
+    return;
+  }
+  const denom=Math.max(.02,state.comfortLevel-state.restLevel);
+  let n=(state.rawSpeed-state.restLevel)/denom;
+  n=clamp(n*state.sensitivity,0,1.5);
+  if(n<.08)n=0;
+  state.motionNorm=n;
+  state.leanSmooth = lerp(state.leanSmooth,state.poseVisible?state.leanNorm:0,.22);
+}
+
+async function calibrate(){
+  showSetup(true);
+  $('#setupActions').classList.add('hidden');
+  $('#setupSpinner').classList.remove('hidden');
+  $('#setupTitle').textContent='전동상지 페달 맞춤 설정';
+  $('#setupText').textContent='환자마다 페달 회전 범위와 속도, 머리·어깨의 중립 위치가 달라서 정지 상태와 편안한 회전 속도를 짧게 측정합니다.';
+
+  // Rest phase
+  state.calibratingPhase='rest'; state.calibrationSamples=[]; state.rawSpeed=0; state.fallbackPrev=null; state.prevWrists=null; state.prevPedalAngle=null; state.prevPedalTime=0; state.neutralTorsoX=.5; state.neutralHeadX=.5; state.neutralShoulderTilt=0; state.leanNorm=0; state.leanSmooth=0;
+  $('#setupStage').textContent='1 / 2  전동상지 페달을 편하게 멈춰주세요';
+  $('#setupDetail').textContent='정지 상태에서 머리 위치와 양쪽 어깨 높이의 기준점을 측정합니다.';
+  for(let n=2;n>=1;n--){$('#setupCount').textContent=n; await sleep(1000);}
+  const rest=percentile(state.calibrationSamples,.9);
+
+  // Comfort phase
+  state.calibratingPhase='comfort'; state.calibrationSamples=[]; state.rawSpeed=0; state.prevWrists=null; state.prevPedalAngle=null; state.prevPedalTime=0;
+  $('#setupStage').textContent='2 / 2  평소 편안한 속도로 페달을 돌려주세요';
+  $('#setupDetail').textContent=state.detectorMode==='pose'?'양 손목의 원형 크랭크 회전 속도를 학습합니다.':'영상 움직임 크기를 학습합니다.';
+  for(let n=5;n>=1;n--){$('#setupCount').textContent=n; await sleep(1000);}
+  const comfort=percentile(state.calibrationSamples,.7);
+
+  state.calibratingPhase=null;
+  state.restLevel=rest;
+  state.comfortLevel=Math.max(rest+(state.detectorMode==='pose'?.12:.035),comfort);
+  state.rawSpeed=0; state.motionNorm=0; state.motionSmooth=0; state.prevWrists=null; state.prevPedalAngle=null; state.prevPedalTime=0; state.fallbackPrev=null;
+  $('#setupCount').textContent='OK';
+  $('#setupStage').textContent='설정 완료';
+  $('#setupDetail').textContent=state.detectorMode==='pose'?'전동상지 페달 회전 추적 모드로 시작합니다.':'자세 인식을 쓸 수 없어 동작 감지 모드로 시작합니다. 이 모드는 차량 없이 코인과 별만 나옵니다.';
+  await sleep(700);
+  showSetup(false);
+}
+
+function showSetup(show){$('#setupOverlay').classList.toggle('hidden',!show);}
+function showSetupError(message){
+  showSetup(true); $('#setupTitle').textContent='카메라 연결을 확인해주세요'; $('#setupText').textContent=message;
+  $('#setupStage').textContent='연결 실패'; $('#setupCount').textContent='!'; $('#setupDetail').textContent='카메라 권한과 브라우저 주소를 확인하세요.';
+  $('#setupSpinner').classList.add('hidden'); $('#setupActions').classList.remove('hidden');
+}
+
+async function prepareCameraAndDetector(){
+  showSetup(true);
+  $('#setupActions').classList.add('hidden'); $('#setupSpinner').classList.remove('hidden');
+  $('#setupTitle').textContent='카메라 준비'; $('#setupStage').textContent='카메라 연결 중'; $('#setupCount').textContent='•••'; $('#setupDetail').textContent='카메라 권한을 확인하고 있습니다.';
+  try{
+    await ensureCamera();
+    $('#setupStage').textContent='팔 인식 모델 준비 중'; $('#setupDetail').textContent='모델을 불러오지 못하면 차량 없이 진행하는 동작 감지 모드로 전환됩니다.';
+    await loadPose();
+    $('#cameraLabel').textContent=state.detectorMode==='pose'?'페달 회전 추적':'동작 감지 모드';
+    $('#modeBadge').textContent=state.detectorMode==='pose'?'페달 회전 추적':'동작 감지';
+    return true;
+  }catch(err){showSetupError(err?.message||'카메라를 시작할 수 없습니다.');return false;}
+}
+
+// Run detector continuously during setup/calibration and game
+function sensorLoop(ts){
+  if(state.cameraReady) detectorStep(ts);
+  requestAnimationFrame(sensorLoop);
+}
+requestAnimationFrame(sensorLoop);
+
+// ---------- game visuals ----------
+function rr(ctx,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function drawCloud(x,y,s){
+  const grad=g.createRadialGradient(x+10*s,y-10*s,2,x+12*s,y,58*s);
+  grad.addColorStop(0,'rgba(255,255,255,.96)');
+  grad.addColorStop(1,'rgba(255,255,255,.48)');
+  g.fillStyle=grad;g.beginPath();g.arc(x,y,22*s,0,Math.PI*2);g.arc(x+22*s,y-9*s,28*s,0,Math.PI*2);g.arc(x+49*s,y+1*s,19*s,0,Math.PI*2);g.fill();
+}
+function drawTree(x,y,s){
+  g.fillStyle='#6d4d2d';rr(g,x-7*s,y,14*s,46*s,5*s);g.fill();
+  const grad=g.createRadialGradient(x-8*s,y-8*s,4*s,x,y,36*s);
+  grad.addColorStop(0,'#5ed98d');
+  grad.addColorStop(1,'#1f8b53');
+  g.fillStyle=grad;g.beginPath();g.arc(x,y-7*s,30*s,0,Math.PI*2);g.arc(x-18*s,y+3*s,21*s,0,Math.PI*2);g.arc(x+18*s,y+4*s,21*s,0,Math.PI*2);g.fill();
+}
+function drawBush(x,y,s){
+  const grad=g.createRadialGradient(x-5*s,y-4*s,1,x,y,24*s);
+  grad.addColorStop(0,'#90ea87');
+  grad.addColorStop(1,'#2c944d');
+  g.fillStyle=grad;
+  g.beginPath();
+  g.arc(x-14*s,y,12*s,0,Math.PI*2);
+  g.arc(x,y-3*s,16*s,0,Math.PI*2);
+  g.arc(x+14*s,y+1*s,12*s,0,Math.PI*2);
+  g.fill();
+}
+function drawRoadSign(x,y,s,label='GO'){
+  g.fillStyle='#dfe7ef';rr(g,x-2*s,y-2*s,4*s,28*s,2*s);g.fill();
+  g.fillStyle='#4aa3ff';rr(g,x-18*s,y-26*s,36*s,22*s,6*s);g.fill();
+  g.fillStyle='#ffffff';g.font=`900 ${10*s}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(label,x,y-15*s);
+}
+function horizonY(){ return innerHeight*.33; }
+function roadBottomY(){ return innerHeight*.985; }
+function roadHalfWidthAt(p){ return lerp(innerWidth*.062, innerWidth*.44, Math.pow(clamp(p,0,1),.97)); }
+function roadYAt(p){ return lerp(horizonY(), roadBottomY(), Math.pow(clamp(p,0,1),1.02)); }
+function roadLeftAt(p){ return innerWidth/2-roadHalfWidthAt(p); }
+function roadRightAt(p){ return innerWidth/2+roadHalfWidthAt(p); }
+function laneWidthAt(p){ return (roadRightAt(p)-roadLeftAt(p))/3; }
+function laneCenterAt(lane,p){
+  // lane은 -1~1 사이의 연속값입니다. 캐릭터가 차선 사이를 부드럽게 이동할 때도
+  // 중간값(-0.6, 0.4 등)을 그대로 좌표로 변환해야 합니다.
+  return innerWidth/2 + lane*laneWidthAt(p);
+}
+function laneDividerX(divider,p){
+  return roadLeftAt(p) + laneWidthAt(p)*divider;
+}
+function drawWorld(dt){
+  const w=innerWidth,h=innerHeight;
+  const horizon=horizonY(), roadBottom=roadBottomY();
+
+  // sky
+  const sky=g.createLinearGradient(0,0,0,horizon);
+  sky.addColorStop(0,'#5ebfff');
+  sky.addColorStop(.48,'#90dcff');
+  sky.addColorStop(.82,'#d8f4ff');
+  sky.addColorStop(1,'#f4fbff');
+  g.fillStyle=sky; g.fillRect(0,0,w,horizon+6);
+
+  // sun glow
+  const sunX=w*.81, sunY=h*.15;
+  const sunGlow=g.createRadialGradient(sunX,sunY,8,sunX,sunY,92);
+  sunGlow.addColorStop(0,'rgba(255,241,170,.95)');
+  sunGlow.addColorStop(.45,'rgba(255,220,120,.45)');
+  sunGlow.addColorStop(1,'rgba(255,220,120,0)');
+  g.fillStyle=sunGlow;g.beginPath();g.arc(sunX,sunY,92,0,Math.PI*2);g.fill();
+  g.fillStyle='rgba(255,237,160,.96)';g.beginPath();g.arc(sunX,sunY,40,0,Math.PI*2);g.fill();
+
+  drawCloud((w*.08 + state.worldOffset*.03)%(w+120)-60,h*.12,.8);
+  drawCloud((w*.44 + state.worldOffset*.015)%(w+180)-90,h*.21,.62);
+  drawCloud((w*.77 + state.worldOffset*.022)%(w+160)-80,h*.17,.5);
+
+  // layered mountains
+  g.fillStyle='#a7bed0';g.beginPath();g.moveTo(0,horizon+38);
+  for(let x=0;x<=w+80;x+=70){ g.lineTo(x,horizon+25-Math.sin(x*.013)*20-(x%210===0?16:0)); }
+  g.lineTo(w,horizon+92);g.lineTo(0,horizon+92);g.fill();
+  g.fillStyle='#87a6bb';g.beginPath();g.moveTo(0,horizon+58);
+  for(let x=0;x<=w+80;x+=60){ g.lineTo(x,horizon+46-Math.sin(.3+x*.017)*18-(x%160===0?12:0)); }
+  g.lineTo(w,horizon+110);g.lineTo(0,horizon+110);g.fill();
+
+  // distant city
+  g.fillStyle='rgba(72,93,118,.34)';
+  for(let i=0;i<16;i++){
+    const bx=(i/15)*w + Math.sin(i*2.1)*12;
+    rr(g,bx,horizon+26+Math.cos(i)*7,12+((i%4)*9),22+((i%5)*9),4);g.fill();
+  }
+
+  // meadow / ground
+  const ground=g.createLinearGradient(0,horizon,0,h);
+  ground.addColorStop(0,'#96da84');
+  ground.addColorStop(.42,'#6cc567');
+  ground.addColorStop(1,'#317f43');
+  g.fillStyle=ground; g.fillRect(0,horizon,w,h-horizon);
+
+  // side field stripes for motion
+  g.fillStyle='rgba(255,255,255,.08)';
+  for(let i=0;i<8;i++){
+    const yy=horizon+40+i*52;
+    g.fillRect(0,yy,w,2);
+  }
+
+  // road shoulder/base
+  g.fillStyle='#986863';g.beginPath();
+  g.moveTo(roadLeftAt(0)-24,horizon);
+  g.lineTo(roadRightAt(0)+24,horizon);
+  g.lineTo(roadRightAt(1)+34,roadBottom);
+  g.lineTo(roadLeftAt(1)-34,roadBottom);
+  g.closePath();g.fill();
+
+  // asphalt road body
+  const asphalt=g.createLinearGradient(0,horizon,0,roadBottom);
+  asphalt.addColorStop(0,'#59616c');
+  asphalt.addColorStop(.45,'#424b57');
+  asphalt.addColorStop(1,'#2f3742');
+  g.fillStyle=asphalt;g.beginPath();
+  g.moveTo(roadLeftAt(0),horizon);
+  g.lineTo(roadRightAt(0),horizon);
+  g.lineTo(roadRightAt(1),roadBottom);
+  g.lineTo(roadLeftAt(1),roadBottom);
+  g.closePath();g.fill();
+
+  // center sheen
+  g.strokeStyle='rgba(255,255,255,.07)';
+  g.lineWidth=20;
+  g.beginPath();g.moveTo(w/2,horizon);g.lineTo(w/2,roadBottom);g.stroke();
+
+  // subtle asphalt texture
+  g.strokeStyle='rgba(255,255,255,.04)';
+  for(let i=0;i<18;i++){
+    const p=i/17;
+    const y=roadYAt(p);
+    g.beginPath();
+    g.moveTo(roadLeftAt(p),y);
+    g.lineTo(roadRightAt(p),y);
+    g.stroke();
+  }
+
+  // edge solid lines
+  g.strokeStyle='rgba(255,255,255,.98)';
+  g.lineWidth=3;
+  g.beginPath();g.moveTo(roadLeftAt(0),horizon);g.lineTo(roadLeftAt(1),roadBottom);g.stroke();
+  g.beginPath();g.moveTo(roadRightAt(0),horizon);g.lineTo(roadRightAt(1),roadBottom);g.stroke();
+
+  // shoulder rumble strips
+  for(let side of [-1,1]){
+    for(let i=0;i<18;i++){
+      const p1=i/18, p2=Math.min(1,p1+.032+.008*i);
+      const y1=roadYAt(p1), y2=roadYAt(p2);
+      const edge1=side<0?roadLeftAt(p1)-9:roadRightAt(p1)+9;
+      const edge2=side<0?roadLeftAt(p2)-15:roadRightAt(p2)+15;
+      g.strokeStyle=i%2===0?'#fdf8dd':'#d45758';
+      g.lineWidth=lerp(1.2,7,p2);
+      g.beginPath();g.moveTo(edge1,y1);g.lineTo(edge2,y2);g.stroke();
+    }
+  }
+
+  // lane separators
+  for(const divider of [1,2]){
+    for(let i=0;i<15;i++){
+      const p1=i/15;
+      const p2=Math.min(1,p1+.03+.018*i);
+      const y1=roadYAt(p1), y2=roadYAt(p2);
+      const x1=laneDividerX(divider,p1), x2=laneDividerX(divider,p2);
+      g.strokeStyle='rgba(255,255,255,.98)';
+      g.lineWidth=lerp(1.2,7.5,p2);
+      g.lineCap='round';
+      g.beginPath();g.moveTo(x1,y1);g.lineTo(x2,y2);g.stroke();
+    }
+  }
+
+  // roadside objects for parallax
+  for(let i=0;i<12;i++){
+    const y=((i*132 + state.worldOffset*1.25)%(h+220))-120;
+    const p=clamp((y-horizon)/(roadBottom-horizon),0,1); if(p<=0) continue;
+    const side=i%2?-1:1;
+    const x=w/2 + side*lerp(w*.18,w*.49,p);
+    if(i%4===0) drawRoadSign(x,y,lerp(.35,1.1,p), i%8===0?'GO':'OT');
+    else if(i%3===0) drawBush(x,y+16*lerp(.2,1,p),lerp(.35,1.15,p));
+    else drawTree(x,y,lerp(.28,1.12,p));
+    g.fillStyle='rgba(255,255,255,.14)';g.fillRect(w/2+side*lerp(w*.12,w*.46,p),y+40*lerp(.2,1,p),2,10*lerp(.4,1.5,p));
+  }
+
+  // near-field flowers / dots
+  for(let i=0;i<20;i++){
+    const side=i%2?-1:1;
+    const px=w/2 + side*lerp(w*.22,w*.52,((i%10)+1)/10);
+    const py=horizon + 80 + ((i*63 + state.worldOffset*1.6)%(h-horizon+40));
+    g.fillStyle=i%3===0?'rgba(255,233,105,.65)':i%3===1?'rgba(255,153,206,.55)':'rgba(144,235,255,.55)';
+    g.beginPath();g.arc(px,py,2+(i%3),0,Math.PI*2);g.fill();
+  }
+
+  if(state.hitFlash>0){
+    g.save();g.globalAlpha=state.hitFlash*.22;g.fillStyle='#ff6b7d';g.fillRect(0,0,w,h);g.restore();
+  }
+}
+function drawPickupIcon(x,y,size,type,alpha=1){
+  g.save();g.globalAlpha=alpha;g.translate(x,y);
+  const glow=g.createRadialGradient(0,0,1,0,0,size*1.6);
+  glow.addColorStop(0,'rgba(255,255,255,.45)');
+  glow.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=glow;g.beginPath();g.arc(0,0,size*1.55,0,Math.PI*2);g.fill();
+  if(type==='star'){
+    g.fillStyle='#ffd84d';g.strokeStyle='rgba(125,84,0,.55)';g.lineWidth=Math.max(1,2*size/30);
+    g.beginPath();
+    for(let i=0;i<10;i++){
+      const a=-Math.PI/2+i*Math.PI/5; const r=i%2===0?size:size*.46;
+      const px=Math.cos(a)*r,py=Math.sin(a)*r;
+      if(i===0)g.moveTo(px,py);else g.lineTo(px,py);
+    }
+    g.closePath();g.fill();g.stroke();
+  }else{
+    const coin=g.createLinearGradient(-size*.7,-size*.7,size*.7,size*.7);
+    coin.addColorStop(0,'#fff0a4');coin.addColorStop(.45,'#ffd44b');coin.addColorStop(1,'#e09d1d');
+    g.fillStyle=coin;g.beginPath();g.arc(0,0,size*.74,0,Math.PI*2);g.fill();
+    g.strokeStyle='rgba(255,243,181,.8)';g.lineWidth=Math.max(1,size*.09);g.stroke();
+    g.fillStyle='#cc8c12';g.font=`900 ${Math.max(10,size*.88)}px sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText('C',0,size*.02);
+  }
+  g.restore();
+}
+function drawEnemyCar(x,y,size,color='#ff5a70',type='car',alpha=1){
+  g.save();g.globalAlpha=alpha;g.translate(x,y);
+  const w=size*.9, h=size*1.16;
+  g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.ellipse(0,h*.69,w*.5,h*.12,0,0,Math.PI*2);g.fill();
+
+  const body=g.createLinearGradient(-w/2,-h/2,w/2,h/2);
+  body.addColorStop(0,'#ffffff22');
+  body.addColorStop(.12,color);
+  body.addColorStop(1,'#00000022');
+  g.fillStyle=body; rr(g,-w/2,-h/2,w,h,Math.max(6,size*.13)); g.fill();
+
+  g.fillStyle='rgba(255,255,255,.88)'; rr(g,-w*.33,-h*.2,w*.66,h*.33,Math.max(4,size*.08)); g.fill();
+  const win=g.createLinearGradient(0,-h*.18,0,h*.1);win.addColorStop(0,'#7fd4ff');win.addColorStop(1,'#30465f');
+  g.fillStyle=win; rr(g,-w*.28,-h*.16,w*.56,h*.24,Math.max(3,size*.06)); g.fill();
+
+  g.fillStyle='rgba(255,255,255,.18)'; rr(g,-w*.42,-h*.38,w*.26,h*.1,Math.max(3,size*.05)); g.fill();
+  g.fillStyle='#141a22'; rr(g,-w*.42,h*.15,w*.84,h*.2,Math.max(4,size*.06)); g.fill();
+
+  g.fillStyle='#ffe181'; g.fillRect(-w*.37,-h*.06,w*.12,h*.08); g.fillRect(w*.25,-h*.06,w*.12,h*.08);
+  g.fillStyle='#ff6677'; g.fillRect(-w*.36,h*.26,w*.1,h*.06); g.fillRect(w*.26,h*.26,w*.1,h*.06);
+
+  g.fillStyle='#1e2229'; g.beginPath();g.arc(-w*.24,h*.52,size*.16,0,Math.PI*2);g.arc(w*.24,h*.52,size*.16,0,Math.PI*2);g.fill();
+  g.fillStyle='rgba(255,255,255,.25)';g.beginPath();g.arc(-w*.24,h*.52,size*.07,0,Math.PI*2);g.arc(w*.24,h*.52,size*.07,0,Math.PI*2);g.fill();
+
+  if(type==='truck'){
+    g.fillStyle='rgba(255,255,255,.18)'; rr(g,-w*.46,-h*.45,w*.92,h*.16,Math.max(3,size*.05)); g.fill();
+    g.strokeStyle='rgba(255,255,255,.15)';g.lineWidth=Math.max(1,size*.03);
+    g.beginPath();g.moveTo(0,-h*.45);g.lineTo(0,h*.34);g.stroke();
+  }
+  g.restore();
+}
+function ensurePickups(){
+  if(!canSteer()) state.pickups.forEach(p=>{p.lane=0;});
+  const target=state.distance+125;
+  while(state.nextPickupAt<target){
+    const isStar=Math.random()<.28;
+    state.pickups.push({d:state.nextPickupAt,lane:canSteer()?[-1,0,1][Math.floor(Math.random()*3)]:0,type:isStar?'star':'coin',value:isStar?100:25,collected:false});
+    state.nextPickupAt+=10+Math.random()*12;
+  }
+  state.pickups=state.pickups.filter(p=>!p.collected && p.d>state.distance-10);
+}
+function ensureObstacles(){
+  if(!canSteer()){state.obstacles=[];return;}
+  // 차량은 한 번에 1대만 등장하고, 다음 차량까지 충분한 회피 시간을 줍니다.
+  const target=state.distance+145;
+  const colors=['#ff6b7d','#59c3ff','#ffb04d','#72d88b','#8e82ff'];
+  while(state.nextObstacleAt<target){
+    const lanes=[-1,0,1];
+    const lane=lanes[Math.floor(Math.random()*lanes.length)];
+    const type=Math.random()<.14?'truck':'car';
+    state.obstacles.push({d:state.nextObstacleAt,lane,type,color:colors[Math.floor(Math.random()*colors.length)],hit:false,passed:false});
+
+    // 약 48~70m 간격: 한 대를 피한 뒤 다음 차량에 대비할 시간을 충분히 확보
+    state.nextObstacleAt += 48+Math.random()*22;
+  }
+  state.obstacles=state.obstacles.filter(o=>o.d>state.distance-12 && !o.hit);
+}
+function collectPickups(){
+  for(const p of state.pickups){
+    if(p.collected)continue;
+    const rel=p.d-state.distance;
+    if(rel<=2.1 && Math.abs(state.laneVisual-p.lane)<.55){
+      p.collected=true;
+      state.score+=p.value;
+      state.pickupsCollected++;
+      if(p.type==='star'){state.stars++;state.flashStar=1;}
+      state.flashText=`+${p.value}`;state.flashTextLife=1;
+    }
+  }
+}
+function updateObstacles(dt){
+  if(state.collisionCooldown>0) state.collisionCooldown=Math.max(0,state.collisionCooldown-dt);
+  for(const o of state.obstacles){
+    const rel=o.d-state.distance;
+    if(!o.passed && rel<-1.5){ o.passed=true; state.avoided++; }
+    if(rel<=2.2 && rel>-1.2 && Math.abs(state.laneVisual-o.lane)<.35 && state.collisionCooldown<=0){
+      o.hit=true;
+      state.hits++;
+      state.collisionCooldown=.95;
+      state.hitFlash=1;
+      state.score=Math.max(0,state.score-50);
+      state.flashText='충돌 -50';
+      state.flashTextLife=1;
+    }
+  }
+}
+function drawPickups(){
+  const horizon=horizonY(), playerY=roadBottomY()-70;
+  for(const p of state.pickups){
+    if(p.collected)continue;
+    const rel=p.d-state.distance;
+    if(rel<0 || rel>96)continue;
+    const t=1-rel/96;
+    const persp=Math.pow(clamp(t,0,1),1.6);
+    const laneProg=lerp(.08,.93,persp);
+    const y=lerp(horizon+14,playerY,persp);
+    const size=lerp(6,25,persp);
+    const bob=Math.sin((performance.now()/240)+(p.d*.11))*lerp(1,5,persp);
+    drawPickupIcon(laneCenterAt(p.lane,laneProg),y+bob,size,p.type,lerp(.55,1,persp));
+  }
+}
+function drawObstacles(){
+  const horizon=horizonY(), playerY=roadBottomY()-58;
+  for(const o of state.obstacles){
+    const rel=o.d-state.distance;
+    if(rel<-3 || rel>120)continue;
+    const t=1-rel/120;
+    const persp=Math.pow(clamp(t,0,1),1.45);
+    const laneProg=lerp(.04,.95,persp);
+    const x=laneCenterAt(o.lane,laneProg);
+    const y=lerp(horizon+8,playerY,persp);
+    const size=lerp(12,78,persp);
+    drawEnemyCar(x,y,size,o.color,o.type,1);
+  }
+}
+function drawRider(){
+  const w=innerWidth,h=innerHeight;
+  const p=.97;
+  const x=laneCenterAt(state.laneVisual,p), y=roadYAt(p)-105;
+  const s=clamp(Math.min(w,h)/720,.75,1.18);
+  const phase=state.runnerPhase;
+  const bob=Math.abs(Math.sin(phase*2))*2*s;
+  g.save();g.translate(x,y-bob);
+
+  g.fillStyle='rgba(0,0,0,.22)';g.beginPath();g.ellipse(0,78*s,58*s,12*s,0,0,Math.PI*2);g.fill();
+
+  // cart base
+  const cart=g.createLinearGradient(0,18*s,0,62*s);cart.addColorStop(0,'#32495f');cart.addColorStop(1,'#182433');
+  g.fillStyle=cart;rr(g,-50*s,26*s,100*s,34*s,14*s);g.fill();
+  g.fillStyle='#90d8ff';rr(g,-34*s,22*s,68*s,8*s,4*s);g.fill();
+  g.fillStyle='#101720';g.beginPath();g.arc(-31*s,63*s,12*s,0,Math.PI*2);g.arc(31*s,63*s,12*s,0,Math.PI*2);g.fill();
+  g.fillStyle='#647687';g.beginPath();g.arc(-31*s,63*s,5*s,0,Math.PI*2);g.arc(31*s,63*s,5*s,0,Math.PI*2);g.fill();
+
+  // support poles and seat
+  g.strokeStyle='#dcecff';g.lineWidth=4*s;g.beginPath();g.moveTo(-26*s,24*s);g.lineTo(-26*s,-6*s);g.moveTo(26*s,24*s);g.lineTo(26*s,-6*s);g.stroke();
+  g.fillStyle='#243649';rr(g,-17*s,10*s,34*s,10*s,5*s);g.fill();
+
+  // body
+  const shirt=g.createLinearGradient(0,-8*s,0,42*s);shirt.addColorStop(0,'#ff8aa1');shirt.addColorStop(1,'#f05873');
+  g.fillStyle=shirt;rr(g,-22*s,-8*s,44*s,50*s,12*s);g.fill();
+  g.fillStyle='#f1bd8d';g.beginPath();g.arc(0,-29*s,16*s,0,Math.PI*2);g.fill();
+  g.fillStyle='#3f2b24';g.beginPath();g.arc(0,-34*s,16*s,Math.PI,Math.PI*2);g.fill();
+  g.fillStyle='#ffffff';g.beginPath();g.arc(-5*s,-31*s,1.5*s,0,Math.PI*2);g.arc(5*s,-31*s,1.5*s,0,Math.PI*2);g.fill();
+  g.strokeStyle='#8c4f4f';g.lineWidth=1.6*s;g.beginPath();g.arc(0,-24*s,5*s,.15*Math.PI,.85*Math.PI);g.stroke();
+
+  // pedal device
+  g.strokeStyle='#dbe8f6';g.lineWidth=5*s;
+  g.beginPath();g.moveTo(-32*s,10*s);g.lineTo(-8*s,10*s);g.lineTo(-8*s,16*s);g.lineTo(8*s,16*s);g.lineTo(8*s,10*s);g.lineTo(32*s,10*s);g.stroke();
+  const cx=0,cy=12*s, crankR=18*s;
+  g.beginPath();g.arc(cx,cy,crankR,0,Math.PI*2);g.stroke();
+  g.fillStyle='#69dfff';g.beginPath();g.arc(cx,cy,5*s,0,Math.PI*2);g.fill();
+  const hx1=cx+Math.cos(phase)*crankR, hy1=cy+Math.sin(phase)*crankR;
+  const hx2=cx-Math.cos(phase)*crankR, hy2=cy-Math.sin(phase)*crankR;
+  g.strokeStyle='#efb180';g.lineWidth=8.5*s;g.lineCap='round';
+  g.beginPath();g.moveTo(-18*s,0*s);g.lineTo(hx1,hy1);g.stroke();
+  g.beginPath();g.moveTo(18*s,0*s);g.lineTo(hx2,hy2);g.stroke();
+  g.fillStyle='#fff';g.beginPath();g.arc(hx1,hy1,4*s,0,Math.PI*2);g.arc(hx2,hy2,4*s,0,Math.PI*2);g.fill();
+
+  g.restore();
+
+  if(state.flashStar>0){
+    g.globalAlpha=clamp(state.flashStar,0,1);drawPickupIcon(x,y-98*s-state.flashStar*14,34*s,'star');g.globalAlpha=1;
+  }
+  if(state.flashTextLife>0 && state.flashText){
+    g.save();g.globalAlpha=clamp(state.flashTextLife,0,1);g.fillStyle='#fff';g.font=`900 ${30*s}px sans-serif`;g.textAlign='center';g.strokeStyle='rgba(0,0,0,.3)';g.lineWidth=6*s;g.strokeText(state.flashText,x,y-125*s-(1-state.flashTextLife)*28*s);g.fillText(state.flashText,x,y-125*s-(1-state.flashTextLife)*28*s);g.restore();
+  }
+}
+const LANE_ENTER=.09, LANE_EXIT_RATIO=.5;
+function updateCoach(n){
+  let name,text,color;
+  const threat = state.obstacles
+    .filter(o=>o.d-state.distance>0 && o.d-state.distance<28)
+    .sort((a,b)=>(a.d-state.distance)-(b.d-state.distance))[0];
+  if(threat && Math.abs(state.laneVisual-threat.lane)<.6){
+    name='회피'; text='앞 차량이 다가옵니다. 몸을 좌우로 움직여 다른 차선으로 피해주세요!'; color='#ffab66';
+  }else if(n<.08){name='정지';text='전동상지 페달을 천천히 돌리기 시작해보세요.';color='#a9b8cd';}
+  else if(n<.45){name='천천히';text='좋아요. 원을 그리듯 부드럽게 페달을 이어가세요.';color='#63e6ff';}
+  else if(n<.95){name='적당히';text=canSteer()?'좋은 리듬이에요. 몸을 살짝 옮겨 차량은 피하고, 별과 코인은 모아보세요!':'좋은 리듬이에요. 이대로 별과 코인을 모아보세요!';color='#70f0a6';}
+  else if(n<1.25){name='빠르게';text=canSteer()?'활발하게 움직이고 있어요. 몸 중심도 함께 조절해보세요.':'활발하게 움직이고 있어요.';color='#ffd76b';}
+  else{name='매우 빠르게';text='너무 무리하지 말고 편안한 범위에서 진행하세요.';color='#ffab66';}
+  $('#speedName').textContent=name;$('#coachText').textContent=text;$('#coachDot').style.background=color;$('#coachDot').style.boxShadow=`0 0 14px ${color}`;
+}
+// 들어갈 때와 돌아올 때 기준을 달리해서 작은 흔들림에 차선이 왕복하지 않게 합니다.
+function updateLaneTarget(){
+  const enter=LANE_ENTER/state.sensitivity, exit=enter*LANE_EXIT_RATIO;
+  const lean=state.leanSmooth;
+  if(state.laneTarget===0){
+    if(lean<-enter) state.laneTarget=-1;
+    else if(lean>enter) state.laneTarget=1;
+  }else if(lean*state.laneTarget<exit){
+    state.laneTarget=0;
+  }
+}
+function gameFrame(ts){
+  if(!state.gameRunning)return;
+  // 치료 시간은 실제 경과 시간으로 재고, 움직임 계산만 한 프레임 이동량을 제한합니다.
+  const realDt=state.lastFrameTs?clamp((ts-state.lastFrameTs)/1000,0,.5):0; state.lastFrameTs=ts;
+  const dt=Math.min(.1,realDt);
+  if(!state.paused){
+    state.motionSmooth=lerp(state.motionSmooth,state.motionNorm,1-Math.exp(-dt*5.5));
+    const moving=state.motionSmooth>.08;
+    const virtualSpeed=moving?lerp(.7,2.65,clamp(state.motionSmooth,0,1.3)/1.3):0;
+    state.visualSpeed=lerp(state.visualSpeed,virtualSpeed,1-Math.exp(-dt*4));
+    state.distance += state.visualSpeed*dt*5.2;
+    state.worldOffset += state.visualSpeed*dt*90;
+    state.runnerPhase += state.visualSpeed*dt*4.6;
+    state.elapsedSec += realDt; state.remainingSec=Math.max(0,state.selectedMinutes*60-state.elapsedSec);
+    if(state.detectorMode==='pose'){
+      if(state.poseVisible) updateLaneTarget();
+    }else{
+      state.laneTarget = 0;
+    }
+    state.laneVisual = lerp(state.laneVisual,state.laneTarget,1-Math.exp(-dt*13));
+    if(moving){state.avgMotionAccum+=state.motionSmooth;state.avgMotionFrames++;}
+    ensurePickups();
+    ensureObstacles();
+    if(moving){
+      collectPickups();
+      updateObstacles(dt);
+    }
+    state.flashStar=Math.max(0,state.flashStar-dt*1.8);
+    state.flashTextLife=Math.max(0,state.flashTextLife-dt*1.7);
+    state.hitFlash=Math.max(0,state.hitFlash-dt*2.2);
+    if(state.remainingSec<=0){finishGame();return;}
+  }
+  drawWorld(dt);drawPickups();drawObstacles();drawRider();updateUi();
+  state.raf=requestAnimationFrame(gameFrame);
+}
+function updateUi(){
+  $('#distanceValue').textContent=Math.floor(state.distance);
+  $('#scoreValue').textContent=state.score.toLocaleString('ko-KR');
+  $('#starValue').textContent=state.stars;
+  $('#rpmValue').textContent=state.detectorMode==='pose'&&state.rpm?Math.round(state.rpm):'--';
+  $('#timer').textContent=fmtTime(state.remainingSec);
+  const pct=clamp(state.motionSmooth/1.35*100,0,100);$('#speedFill').style.width=pct+'%';$('#motionValue').textContent=Math.round(state.motionSmooth*100);
+  const progress=clamp(state.elapsedSec/(state.selectedMinutes*60)*100,0,100);$('#progressFill').style.width=progress+'%';$('#progressText').textContent=Math.round(progress)+'%';
+  $('#trackingState').textContent=state.detectorMode==='pose'?(state.poseVisible?`머리·어깨 ${state.laneTarget===-1?'← 왼쪽':state.laneTarget===1?'오른쪽 →':'가운데'} · ${state.leanSmooth.toFixed(2)}`:'머리·어깨 찾는 중'):'영상 움직임 감지';
+  updateCoach(state.motionSmooth);
+}
+function resetSession(){
+  state.gameRunning=false;cancelAnimationFrame(state.raf);state.paused=false;state.lastFrameTs=0;state.startTs=0;state.elapsedSec=0;state.remainingSec=state.selectedMinutes*60;state.distance=0;state.stars=0;state.score=0;state.pickups=[];state.nextPickupAt=16;state.pickupsCollected=0;state.motionSmooth=0;state.motionNorm=0;state.avgMotionAccum=0;state.avgMotionFrames=0;state.worldOffset=0;state.runnerPhase=0;state.rpm=null;state.rpmBuf=[];state.crossings=[];state.lastWristDeltaSign=0;state.prevPedalAngle=null;state.prevPedalTime=0;state.pedalPhase=0;state.pedalRadius=0;state.flashStar=0;state.flashText=null;state.flashTextLife=0;state.headCenterX=.5;state.neutralHeadX=.5;state.shoulderTilt=0;state.neutralShoulderTilt=0;state.leanNorm=0;state.leanSmooth=0;state.laneTarget=0;state.laneVisual=0;state.obstacles=[];state.nextObstacleAt=55;state.lastWaveOpenLane=0;state.avoided=0;state.hits=0;state.collisionCooldown=0;state.hitFlash=0;
+}
+function launchGameLoop(){
+  acquireWakeLock();
+  state.gameRunning=true;state.paused=false;state.lastFrameTs=performance.now();state.remainingSec=Math.max(0,state.selectedMinutes*60-state.elapsedSec);requestAnimationFrame(gameFrame);
+}
+async function startGame(){
+  state.launchIntent='start';resetSession();$('#landing').classList.add('hidden');$('#app').classList.remove('hidden');$('#cameraCard').classList.toggle('collapsed',!$('#cameraPreview').checked);resize();
+  const ok=await prepareCameraAndDetector();if(!ok)return;
+  await calibrate();
+  launchGameLoop();
+}
+function finishGame(){
+  if(!state.gameRunning && !state.paused){goHome();return;}
+  state.gameRunning=false;state.paused=false;cancelAnimationFrame(state.raf);$('#pauseOverlay').classList.add('hidden');
+  $('#sumTime').textContent=fmtTime(state.elapsedSec);$('#sumDistance').textContent=Math.floor(state.distance)+' m';$('#sumScore').textContent=state.score.toLocaleString('ko-KR');$('#sumStars').textContent=state.stars;$('#sumAvoided').textContent=state.avoided;$('#sumHits').textContent=state.hits;$('#summaryGrid').classList.toggle('no-cars',!canSteer());document.querySelectorAll('.car-stat').forEach(el=>el.classList.toggle('hidden',!canSteer()));releaseWakeLock();$('#summaryOverlay').classList.remove('hidden');
+}
+function pauseGame(){if(!state.gameRunning)return;state.paused=true;$('#pauseOverlay').classList.remove('hidden');}
+function resumeGame(){state.paused=false;state.lastFrameTs=performance.now();$('#pauseOverlay').classList.add('hidden');}
+function goHome(){
+  releaseWakeLock();
+  state.gameRunning=false;state.paused=false;cancelAnimationFrame(state.raf);
+  if(state.stream){state.stream.getTracks().forEach(t=>t.stop());state.stream=null;video.srcObject=null;}
+  state.cameraReady=false;state.fallbackPrev=null;state.prevWrists=null;state.prevPedalAngle=null;state.prevPedalTime=0;drawPose(null);
+  $('#summaryOverlay').classList.add('hidden');$('#pauseOverlay').classList.add('hidden');$('#setupOverlay').classList.add('hidden');$('#app').classList.add('hidden');$('#landing').classList.remove('hidden');
+}
+
+// ---------- events ----------
+$('#timeRow').addEventListener('click',e=>{const b=e.target.closest('[data-min]');if(!b)return;document.querySelectorAll('[data-min]').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.selectedMinutes=Number(b.dataset.min);});
+$('#sensitivity').addEventListener('input',e=>state.sensitivity=Number(e.target.value)/100);
+$('#startBtn').addEventListener('click',startGame);
+$('#cameraTestBtn').addEventListener('click',async()=>{
+  state.launchIntent='test';$('#landing').classList.add('hidden');$('#app').classList.remove('hidden');$('#cameraCard').classList.remove('collapsed');resize();
+  const ok=await prepareCameraAndDetector();if(ok){showSetup(false);$('#coachText').textContent='카메라 확인 완료. 양쪽 팔이 보이면 준비됐습니다. 종료를 누르면 처음 화면으로 돌아갑니다.';}
+});
+$('#setupCancel').addEventListener('click',goHome);
+$('#setupRetry').addEventListener('click',async()=>{
+  const ok=await prepareCameraAndDetector();if(!ok)return;
+  if(state.launchIntent==='start'){await calibrate();launchGameLoop();}
+  else{showSetup(false);$('#coachText').textContent='카메라 확인 완료. 종료를 누르면 처음 화면으로 돌아갑니다.';}
+});
+$('#toggleCameraBtn').addEventListener('click',()=>$('#cameraCard').classList.toggle('collapsed'));
+$('#recalibrateBtn').addEventListener('click',async()=>{const wasPaused=state.paused;state.paused=true;await calibrate();state.paused=wasPaused;state.lastFrameTs=performance.now();});
+$('#pauseBtn').addEventListener('click',pauseGame);$('#resumeBtn').addEventListener('click',resumeGame);$('#endBtn').addEventListener('click',finishGame);$('#pauseEndBtn').addEventListener('click',finishGame);
+$('#restartBtn').addEventListener('click',goHome);$('#againBtn').addEventListener('click',async()=>{$('#summaryOverlay').classList.add('hidden');await startGame();});
+
+// 화면을 벗어나면 치료 시간이 흐르지 않도록 멈추고, 돌아오면 꺼짐 방지를 다시 켭니다.
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){if(state.gameRunning&&!state.paused)pauseGame();}
+  else if(state.gameRunning) acquireWakeLock();
+});
+
+// Environment hint
+if(window.isSecureContext && location.protocol!=='file:') $('#envNote').classList.add('hidden');
+if(location.protocol==='file:') $('#envNote').innerHTML='<b>중요:</b> 지금처럼 HTML 파일을 직접 열면 태블릿 브라우저에서 카메라 권한이 막힐 수 있습니다. 실제 사용 시에는 HTTPS 주소로 배포하거나 localhost에서 실행하는 방식을 권장합니다.';
+if(!window.isSecureContext) $('#envNote').innerHTML='<b>카메라 제한:</b> 현재 페이지가 보안 컨텍스트(HTTPS/localhost)가 아닙니다. 카메라가 열리지 않을 가능성이 높습니다.';
+
+if(!('wakeLock' in navigator)){
+  $('#envNote').classList.remove('hidden');
+  $('#envNote').insertAdjacentHTML('beforeend','<div style="margin-top:6px"><b>화면 꺼짐 주의:</b> 이 브라우저는 화면 꺼짐 방지를 지원하지 않습니다. 치료 전 태블릿의 화면 자동 꺼짐 시간을 충분히 늘려주세요.</div>');
+}
+
+// Initial background preview
+function previewLoop(ts){if(!$('#app').classList.contains('hidden')&&!state.gameRunning&&!state.paused){drawWorld(.016);ensurePickups();ensureObstacles();drawPickups();drawObstacles();drawRider();}requestAnimationFrame(previewLoop)}requestAnimationFrame(previewLoop);
+</script>
+</body>
+</html>
